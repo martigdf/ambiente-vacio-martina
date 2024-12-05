@@ -1,0 +1,44 @@
+name: recuperacion
+services:
+  backend:
+    image: backend
+    container_name: backend
+    build:
+      context: ./backend
+    command: sh -c "npm install && npm run dev"
+    volumes:
+      - ./backend:/backend
+    environment:
+      - PGDATABASE=${PGDATABASE}
+      - PGUSER=${PGUSER}
+      - PGPASSWORD=${PGPASSWORD}
+      - PGHOST=${PGHOST}
+  frontend:
+    image: frontend
+    container_name: frontend
+    build:
+      context: ./frontend
+    command: sh -c "npm install && npm start"
+    volumes:
+      - ./frontend/:/frontend
+  database:
+    image: database
+    container_name: database
+    build:
+      context: ./database
+    environment:
+      - POSTGRES_DB=${PGDATABASE}
+      - POSTGRES_USER=${PGUSER}
+      - POSTGRES_PASSWORD=${PGPASSWORD}
+    ports:
+      - 5432:5432
+  proxy:
+    image: nginx:alpine
+    container_name: proxy
+    volumes:
+      - ./proxy/myconf.template:/etc/nginx/templates/default.conf.template
+    ports:
+      - 80:80
+    depends_on:
+      - frontend
+      - backend
